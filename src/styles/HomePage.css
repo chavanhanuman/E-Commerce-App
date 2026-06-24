@@ -21,6 +21,68 @@
 
 }
 
+.categoryFilter{
+border: 1px solid #ddd;
+padding: 10px;
+max-height: 200px;
+overflow: auto;
+
+
+}
+
+.categoryItem{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.categoryFilter label{
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-size: 14px;
+
+}
+
+.categoryFilter input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.customDropDown {
+  position: relative;
+}
+
+.dropdownBtn {
+  padding: 8px 12px;
+  cursor: pointer;
+  border: 1px solid #cccccc;
+  background: white;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  width: 220px;
+  background: white;
+  border: 1px solid #ddd;
+  padding: 10px;
+  z-index: 100;
+  max-height: 250px;
+  overflow-y: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.categoryItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
 .productContainer {
 
     display: grid;
@@ -81,7 +143,7 @@
 
 
 
-/* Mobile  view */
+/* Mobile  view  CSS */
 @media (max-width: 500px) {
   .productContainer {
     grid-template-columns: repeat(2, 1fr);
@@ -93,10 +155,16 @@
   }
 
   .productCard img {
-    height: 130px;
+    height: 230px;
   }
 
   .productCard h3 {
     font-size: 14px;
+  }
+
+  .categoryFilter{
+    flex-direction: column;
+    gap: 8px;
+    
   }
 }

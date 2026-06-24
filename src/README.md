@@ -1,9 +1,10 @@
 
 # E-Commerce React Typescript App
 
-This Project is a responsive e-commerce web application built using React,React-Roouter-DOM, Typescript, React Router, Context API, Hooks,HTML, CSS, and Cypress Testing.
+This Project is a responsive e-commerce web application built using React,React-Roouter-DOM, useRef, Typescript, React Router, Context API, Hooks,HTML, CSS, and Cypress Testing.
 
 # Product and category data are fetched dynamically from the  Fake Platzi Store API.
+Filter products by multiple categories.
 
 
 # Project Information

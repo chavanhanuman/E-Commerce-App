@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState,useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {Link } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
@@ -13,14 +13,18 @@ interface Product {
   title: string;
   price: number;
   images: string[];
+  
 }
+
+//i USE category interface to define structure of category object.
+interface  Category{id:number;name:string};
 
 
 function Home () {
 
   //storing the product data
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading,setLoading]=useState(false);
 
   //router hooks
@@ -29,9 +33,14 @@ function Home () {
 
   //get query parameters
   const params = new URLSearchParams(location.search);
-  const category = params.get("category") || "";
-  const sort = params.get("sort")|| "";
 
+  //const category = params.get("category") || "";
+  const sort = params.get("sort")|| "";
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const [showCategories,setShowCategories] =useState(false);
+
+  const selectedCategories = params.get("category")?.split(",")||[];
   //cart contex
   const context =useContext(CartContext);
   const addToCart = context?.addToCart;
@@ -49,6 +58,22 @@ function Home () {
 
  
 
+
+  useEffect(() => {
+    const handleClickOutSide = (event:MouseEvent) => {
+      
+      if(dropdownRef.current && !dropdownRef.current.contains(event.target as Node))
+      {
+        setShowCategories(false);
+      }
+    };
+    document.addEventListener("mousedown",handleClickOutSide);
+
+    return () => {
+      document.removeEventListener("mousedown",handleClickOutSide);
+    };
+  },[]);
+
   
   // fetech products basd on cat and sort it
 
@@ -57,15 +82,22 @@ function Home () {
     setLoading(true);
 
     try {
-      let url ="https://api.escuelajs.co/api/v1/products";
-       
-       if(category) 
-        {
-          url = `https://api.escuelajs.co/api/v1/categories/${category}/products`;
-        }
+      
+      let data=[];
+      if(selectedCategories.length>0){
 
-        const res = await fetch(url);
-        const data = await res.json();
+        const requests = selectedCategories.map((categoryId)=>
+        fetch(`https://api.escuelajs.co/api/v1/categories/${categoryId}/products`)
+        .then((res)=>res.json())
+      );
+    const results = await Promise.all(requests);
+    data=results.flat();
+      } else {
+        const res = await fetch("https://api.escuelajs.co/api/v1/products");
+
+        data = await res.json();
+      }
+    
 
         //sort by price low to high
         if(sort==="asc")
@@ -84,7 +116,7 @@ function Home () {
         }
       setProducts(data);
 
-    } catch(error) {
+    } catch(error){
       console.log(error);
     }
 
@@ -93,33 +125,51 @@ function Home () {
     };
 
     fetchProducts();
-  },[category,sort]);
+  },[location.search]);
 
 
 
-const handleCategory = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleCategory = (categoryId: number) => {
 
-  const newParams = new URLSearchParams(location.search);
+    const newParams = new URLSearchParams(location.search);
+    let updatedCategories = [...selectedCategories];
 
-  if(e.target.value) {
-    newParams.set("category",e.target.value);
+    if(updatedCategories.includes(String(categoryId)))
+    {
+      updatedCategories=updatedCategories.filter((id) => id !==String(categoryId));
+    }
+    else
+    {
+      updatedCategories.push(String(categoryId));
 
-  }
-  else {
-     newParams.delete("category");
+    }
 
-  }
 
-  navigate(`/?${newParams.toString()}`);
-};
+    if(updatedCategories.length>0) 
+    {
+      newParams.set("category",updatedCategories.join(","));
+
+    }
+    else 
+      {
+      newParams.delete("category");
+    }
+    navigate(`/?${newParams.toString()}`);
+  };
+
+
+
 
 
 const handleSort = (e: React.ChangeEvent<HTMLSelectElement>) => {
   const newParams = new URLSearchParams(location.search);
 
-  if (e.target.value) {
+  if(e.target.value) 
+  {
     newParams.set("sort", e.target.value);
-  } else {
+  } 
+  else
+ {
     newParams.delete("sort");
   }
 
@@ -137,17 +187,29 @@ const handleSort = (e: React.ChangeEvent<HTMLSelectElement>) => {
          </Link>
 
        </div>
+
+
+       
       <div className="filterBox">
-        <select value={category} onChange={handleCategory}>
-          <option value="">All Categories</option>
+       
+       <div className="customDropDown" ref={dropdownRef}>
+         
+         <button type="button" className="dropdownBtn" onClick={() => setShowCategories(!showCategories)}>All Categories</button>
+         
+         {showCategories && (
+          <div className="dropdownMenu">
+            {categories.map((cat) =>(
+              <label key={cat.id} className="categoryItem">
+                <input type="checkbox" checked={selectedCategories.includes(String(cat.id))}
+                onChange={() => handleCategory(cat.id)}
+                />
+                {cat.name}
+              </label>
+            ))}
 
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>{cat.name}</option>
-         ) )
-
-          }
-
-        </select>
+          </div>
+         )}
+        </div>
 
          <select value={sort} onChange={handleSort}>
           <option value={""}>Sort</option>
